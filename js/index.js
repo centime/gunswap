@@ -1,3 +1,8 @@
+var SiteswapJS = require('./Siteswap.js');
+var SiteswapAnimator = require('./SiteswapAnimator.js');
+var SiteswapGraph = require('./SiteswapGraph.js');
+var util = require('./util.js');
+
 var twoWindow = false;
 
 window.onload = function () {
@@ -533,10 +538,10 @@ function showHideCameraCustomPosition() {
 
 function getInputsFromQueryString() {
 	var inputs = {};
-	var siteswap = getURLQueryStringParameterByName("siteswap");
-	var props = JSON.parse(getURLQueryStringParameterByName("props"));
-	var beatDuration = getURLQueryStringParameterByName("beatDuration");
-	var dwellPath = getURLQueryStringParameterByName("dwellPath");
+	var siteswap = util.getURLQueryStringParameterByName("siteswap");
+	var props = JSON.parse(util.getURLQueryStringParameterByName("props"));
+	var beatDuration = util.getURLQueryStringParameterByName("beatDuration");
+	var dwellPath = util.getURLQueryStringParameterByName("dwellPath");
 	
 	if(siteswap !== null) {
 		inputs.siteswap = siteswap;
@@ -591,3 +596,22 @@ function deleteSavedSiteswap(savedSiteswapIndex) {
 	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
 	refreshSavedSiteswapsList();
 }
+
+window.go = go;
+window.displayMenu = displayMenu;
+window.updateAdvancedInputsFromBasic = updateAdvancedInputsFromBasic;
+window.zoomIn = zoomIn;
+window.zoomOut = zoomOut;
+window.updateAnimationSpeed = updateAnimationSpeed;
+window.updateCameraMode = updateCameraMode;
+window.updateDisplayPropPaths = updateDisplayPropPaths;
+window.updateAdvancedLabels = updateAdvancedLabels;
+window.runExample = runExample;
+window.generateGIF = generateGIF;
+window.findSiteswaps = findSiteswaps;
+window.runSiteswap = runSiteswap;
+window.updateDrawHandsForProp = updateDrawHandsForProp;
+window.showHideCameraCustomPosition = showHideCameraCustomPosition;
+window.saveCurrentSiteswap = saveCurrentSiteswap;
+window.runSavedSiteswap = runSavedSiteswap;
+window.deleteSavedSiteswap = deleteSavedSiteswap;

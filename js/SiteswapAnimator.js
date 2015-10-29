@@ -1,6 +1,4 @@
-(function(exports){
-
-function SiteswapAnimator(containerId, options) {
+module.exports.SiteswapAnimator = function(containerId, options) {
 	
 	var 
 		container,
@@ -666,7 +664,3 @@ function SiteswapAnimator(containerId, options) {
 	}
 
 }
-
-exports.SiteswapAnimator = SiteswapAnimator;
-
-})(typeof exports === 'undefined'? this['SiteswapAnimator']={}: exports);

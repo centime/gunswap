@@ -1,3 +1,5 @@
+var util = require('./util.js');
+
 function BounceGA(gaConfig, fitnessConfig) {
 	/* TO DO - fill in unprovided inputs */
 	this.gaConfig = gaConfig;
@@ -7,18 +9,18 @@ function BounceGA(gaConfig, fitnessConfig) {
 	if (fitnessConfig.axis1 === undefined) {
 		for (var i = 0; i < this.fitnessConfig.surfaces.length; i++) {	
 			var surface = this.fitnessConfig.surfaces[i];
-			normalize(surface.normal);
+			util.normalize(surface.normal);
 			var axis1;
 			if (surface.normal.x == 0 && surface.normal.z == 0) {
 				axis1 = {x:1,y:0,z:0};
 			} else {
 				axis1 = {x:-surface.normal.z,y:0,z:surface.normal.x};
 			}
-			var axis2 = cross(surface.normal,axis1);
-			normalize(axis1);
-			normalize(axis2);
-			multiply(axis1,surface.scale);
-			multiply(axis2,surface.scale);
+			var axis2 = util.cross(surface.normal,axis1);
+			util.normalize(axis1);
+			util.normalize(axis2);
+			util.multiply(axis1,surface.scale);
+			util.multiply(axis2,surface.scale);
 			surface.axis1 = axis1;
 			surface.axis2 = axis2;
 		}
@@ -55,7 +57,7 @@ BounceGA.prototype.getBouncePath = function(v) {
 	for (var t = 0; t <= this.fitnessConfig.maxT; t += this.fitnessConfig.dt) {
 
 		// update position / velocity
-		add(pt, multiply(cloneObject(vt), this.fitnessConfig.dt));
+		util.add(pt, util.multiply(cloneObject(vt), this.fitnessConfig.dt));
 		vt.y += this.fitnessConfig.G*this.fitnessConfig.dt;
 
 		p.push(cloneObject(pt));
@@ -68,8 +70,8 @@ BounceGA.prototype.getBouncePath = function(v) {
 
 			if (
 				Math.abs(distance) <= this.fitnessConfig.R // distance from plane is within radius
-				&& Math.abs(dot(sub(cloneObject(pt),surface.position),normalize(cloneObject(surface.axis1)))) <= surface.scale
-				&& Math.abs(dot(sub(cloneObject(pt),surface.position),normalize(cloneObject(surface.axis2)))) <= surface.scale
+				&& Math.abs(util.dot(util.sub(cloneObject(pt),surface.position),util.normalize(cloneObject(surface.axis1)))) <= surface.scale
+				&& Math.abs(util.dot(util.sub(cloneObject(pt),surface.position),util.normalize(cloneObject(surface.axis2)))) <= surface.scale
 				&& !surface.colliding
 			) {
 				surface.colliding = true;
@@ -80,10 +82,10 @@ BounceGA.prototype.getBouncePath = function(v) {
 				//new velocity from bounce
 				var bounceV = (new THREE.Vector3()).copy(surface.normal);
 				var bounceV = cloneObject(surface.normal);
-				multiply(bounceV, dot(vt, surface.normal));
-				multiply(bounceV, 2*this.fitnessConfig.C);
-				negate(bounceV);
-				add(vt, bounceV);
+				util.multiply(bounceV, util.dot(vt, surface.normal));
+				util.multiply(bounceV, 2*this.fitnessConfig.C);
+				util.negate(bounceV);
+				util.add(vt, bounceV);
 
 			} else if (Math.abs(distance) > this.fitnessConfig.R && surface.colliding) {
 				surface.colliding = false;
@@ -125,7 +127,7 @@ BounceGA.prototype.getBouncePath = function(v) {
 	if (pTchoices.length > 0) {
 		// go through pT choices and grab the best
 		pTchoices.sort(function(a,b) { 
-			return magnitude(sub(cloneObject(a.pT),a.actualpT)) - magnitude(sub(cloneObject(b.pT),a.actualpT));
+			return util.magnitude(util.sub(cloneObject(a.pT),a.actualpT)) - util.magnitude(util.sub(cloneObject(b.pT),a.actualpT));
 		});
 
 		return {path: p.splice(0,pTchoices[0].T/this.fitnessConfig.dt), velocities: velocities.splice(0,pTchoices[0].T/this.fitnessConfig.dt), T: pTchoices[0].T};
@@ -145,7 +147,7 @@ BounceGA.prototype.generateMember = function(parent) {
 			v.x = (1-2*Math.random())*(parent.fitness < this.gaConfig.mutationScale ? parent.fitness : this.gaConfig.mutationScale);
 			v.y = (1-2*Math.random())*(parent.fitness < this.gaConfig.mutationScale ? parent.fitness : this.gaConfig.mutationScale);
 			v.z = (1-2*Math.random())*(parent.fitness < this.gaConfig.mutationScale ? parent.fitness : this.gaConfig.mutationScale);
-			add(v, parent.v);
+			util.add(v, parent.v);
 		} else {
 			v = cloneObject(parent.v);
 		}
@@ -167,8 +169,8 @@ BounceGA.prototype.generateMember = function(parent) {
 		
 		// first find a random spot on the surface
 		v = cloneObject(targetSurface.position);
-		add(v, multiply(cloneObject(targetSurface.axis1), 1-2*Math.random()));
-		add(v, multiply(cloneObject(targetSurface.axis2), 1-2*Math.random()));
+		util.add(v, util.multiply(cloneObject(targetSurface.axis1), 1-2*Math.random()));
+		util.add(v, util.multiply(cloneObject(targetSurface.axis2), 1-2*Math.random()));
 
 		// save and remove the y component
 		var targetY = v.y;
@@ -188,10 +190,10 @@ BounceGA.prototype.generateMember = function(parent) {
 		var maxV = this.gaConfig.initialScale;
 
 		// create velocity vector from p0 to random spot on surface
-		sub(v, p0copy);
+		util.sub(v, p0copy);
 		
-		normalize(v);
-		multiply(v, minV + (maxV-minV)*Math.random());
+		util.normalize(v);
+		util.multiply(v, minV + (maxV-minV)*Math.random());
 
 		// now get minV and maxV for y-component
 		// the min velocity (or max velocity down) is either 0 if tossSign is 1 or targetY is above, or the time it takes to bounce back from straight down
@@ -210,7 +212,7 @@ BounceGA.prototype.generateMember = function(parent) {
 	return {
 		v: v, 
 		T: bouncePath.T,
-		fitness: bouncePath.path ? magnitude(sub(cloneObject(bouncePath.path[bouncePath.path.length-1]), this.fitnessConfig.pT)) : 100
+		fitness: bouncePath.path ? util.magnitude(util.sub(cloneObject(bouncePath.path[bouncePath.path.length-1]), this.fitnessConfig.pT)) : 100
 	};
 }
 
@@ -275,6 +277,8 @@ BounceGA.prototype.evolve = function() {
 	}
 }
 
+module.exports.BounceGA = BounceGA;
+
 // function Animator(ga) {
 
 // 	var 
@@ -307,7 +311,7 @@ BounceGA.prototype.evolve = function() {
 // 	/* lights */
 // 	var ceilingLight = new THREE.PointLight( 0xffffff );
 // 	ceilingLight.position.set(0,20,0);
-// 	scene.add( ceilingLight );
+// 	scene.util.add( ceilingLight );
 
 // 	/* surfaces */
 // 	ga.fitnessConfig.surfaces.map(function(a) {
@@ -319,31 +323,31 @@ BounceGA.prototype.evolve = function() {
 // 			scale: a.scale
 // 		}
 // 		var surfaceGeom = new THREE.Geometry();
-// 		surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).add((new THREE.Vector3()).add(surface.axis1).add(surface.axis2)) );
-// 		surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).add((new THREE.Vector3()).add(surface.axis1).negate().add(surface.axis2)) );
-// 		surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).add((new THREE.Vector3()).add(surface.axis1).add(surface.axis2).negate()) );
-// 		surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).add((new THREE.Vector3()).add(surface.axis2).negate().add(surface.axis1)) );
+// 		surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).util.add((new THREE.Vector3()).util.add(surface.axis1).util.add(surface.axis2)) );
+// 		surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).util.add((new THREE.Vector3()).util.add(surface.axis1).util.negate().util.add(surface.axis2)) );
+// 		surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).util.add((new THREE.Vector3()).util.add(surface.axis1).util.add(surface.axis2).util.negate()) );
+// 		surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).util.add((new THREE.Vector3()).util.add(surface.axis2).util.negate().util.add(surface.axis1)) );
 
 // 		surfaceGeom.faces.push( new THREE.Face3( 0, 1, 2 ) );
 // 		surfaceGeom.faces.push( new THREE.Face3( 2, 0, 3 ) );
 
 // 		var surfaceMesh = new THREE.Mesh(surfaceGeom, new THREE.MeshBasicMaterial( { color: 'grey', side: THREE.DoubleSide } ));
-// 		scene.add(surfaceMesh);
+// 		scene.util.add(surfaceMesh);
 // 	});
 
 // 	/* draw ball */
 
 // 	var ballMesh = new THREE.Mesh(new THREE.SphereGeometry( .1, 32, 32 ), new THREE.MeshBasicMaterial( { color: 'red' } ));
 // 	ballMesh.position = ga.fitnessConfig.p0;
-// 	scene.add(ballMesh);
+// 	scene.util.add(ballMesh);
 
 // 	var targetMesh = new THREE.Mesh(new THREE.SphereGeometry( .1, 32, 32 ), new THREE.MeshBasicMaterial( { color: 'green' } ));
 // 	targetMesh.position = ga.fitnessConfig.pT;
-// 	scene.add(targetMesh);
+// 	scene.util.add(targetMesh);
 
 // 	/* add axes for debugging */
 // 	axes = buildAxes( 1 );
-// 	scene.add(axes);
+// 	scene.util.add(axes);
 
 // 	/* create the renderer and add it to the canvas container */
 // 	if( !window.WebGLRenderingContext ) {
@@ -413,12 +417,12 @@ BounceGA.prototype.evolve = function() {
 // 	function buildAxes( length ) {
 // 	        var axes = new THREE.Object3D();
 
-// 	        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( length, 0, 0 ), 0xFF0000 ) ); // +X
-// 	        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( -length, 0, 0 ), 0xFF0000) ); // -X
-// 	        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, length, 0 ), 0x00FF00 ) ); // +Y
-// 	        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, -length, 0 ), 0x00FF00 ) ); // -Y
-// 	        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, length ), 0x0000FF ) ); // +Z
-// 	        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -length ), 0x0000FF ) ); // -Z
+// 	        axes.util.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( length, 0, 0 ), 0xFF0000 ) ); // +X
+// 	        axes.util.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( -length, 0, 0 ), 0xFF0000) ); // -X
+// 	        axes.util.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, length, 0 ), 0x00FF00 ) ); // +Y
+// 	        axes.util.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, -length, 0 ), 0x00FF00 ) ); // -Y
+// 	        axes.util.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, length ), 0x0000FF ) ); // +Z
+// 	        axes.util.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -length ), 0x0000FF ) ); // -Z
 
 // 	        return axes;
 

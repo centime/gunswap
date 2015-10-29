@@ -1,4 +1,6 @@
-(function(exports){
+var BounceGA = require('./BounceGA.js');
+var Bezier = require('./Bezier.js');
+var util = require('./util.js');
 
 /* calculates the sum of all throws in the siteswap. used to determine the number of props */
 function sumThrows(str) {
@@ -35,7 +37,7 @@ var flightPathCache = {};
 var LEFT = 0, RIGHT = 1;
 
 /* core functions */
-exports.CreateSiteswap = function(siteswapStr, options) {
+ function CreateSiteswap(siteswapStr, options) {
 	
 	/* return variable */
 	var siteswap = {
@@ -160,18 +162,18 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		// set up axes on surfaces
 		for (var i = 0; i < siteswap.surfaces.length; i++) {
 			var surface = siteswap.surfaces[i];
-			normalize(surface.normal);
+			util.normalize(surface.normal);
 			var axis1;
 			if (surface.normal.x == 0 && surface.normal.z == 0) {
 				axis1 = {x:1, y:0, z:0};
 			} else {
 				axis1 = {x:-surface.normal.z, y:0, z:surface.normal.x};
 			}
-			var axis2 = cross(surface.normal,axis1);
-			normalize(axis1);
-			multiply(axis1,surface.scale);
-			normalize(axis2);
-			multiply(axis2,surface.scale);
+			var axis2 = util.cross(surface.normal,axis1);
+			util.normalize(axis1);
+			util.multiply(axis1,surface.scale);
+			util.normalize(axis2);
+			util.multiply(axis2,surface.scale);
 			surface.axis1 = axis1;
 			surface.axis2 = axis2;
 		}
@@ -364,7 +366,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			}
 
 			var numSpins;
-			var tossOrientation = normalize({x:.1,y:.1,z:1});
+			var tossOrientation = util.normalize({x:.1,y:.1,z:1});
 
 			var sIx = siteswapStr.indexOf("S");			
 			if (sIx > 0) {
@@ -376,7 +378,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					tossOrientation.x = parseFloat(spinConfig[1]);
 					tossOrientation.y = parseFloat(spinConfig[2]);
 					tossOrientation.z = parseFloat(spinConfig[3]);
-					normalize(tossOrientation);
+					util.normalize(tossOrientation);
 				}
 
 			} else {
@@ -463,7 +465,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 		/* make sure props array is correct length */
 		while (siteswap.props.length < siteswap.numProps) {
-			siteswap.props.push(cloneObject(siteswap.props.last()));
+			siteswap.props.push(util.cloneObject(siteswap.props.last()));
 		}
 		while (siteswap.props.length > siteswap.numProps) {
 			siteswap.props.pop();
@@ -531,7 +533,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		while (!patternComplete) {
 
 			/* TODO: explain this */
-			var tmpPropOrbits = cloneObject(siteswap.propOrbits);
+			var tmpPropOrbits = util.cloneObject(siteswap.propOrbits);
 
 			/* queue of props to throw this beat */
 			var propsLanding = [];
@@ -610,11 +612,11 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							
 
 			/* if we're at the beginning of the toss array and we've returned to the original state, the pattern is complete */
-			if (initComplete && beat % siteswap.tosses.length == 0 && arraysEqual(siteswap.states[0],curState)) {					
+			if (initComplete && beat % siteswap.tosses.length == 0 && util.arraysEqual(siteswap.states[0],curState)) {
 				patternComplete = true;				
 			} else {
 				/* add the current state to the state array and update prop orbits */
-				siteswap.states.push(cloneObject(curState));
+				siteswap.states.push(util.cloneObject(curState));
 				siteswap.propOrbits = tmpPropOrbits;
 			}					
 
@@ -1255,7 +1257,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				noGA: false
 			};
 
-			ga = new BounceGA(gaConfig,fitnessConfig);
+			ga = new BounceGA.BounceGA(gaConfig,fitnessConfig);
 			ga.evolve();
 
 			if (!ga.ableToFindSolution) {
@@ -1413,4 +1415,4 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 }
 
-})(typeof exports === 'undefined'? this['SiteswapJS']={}: exports);
+module.exports.CreateSiteswap = CreateSiteswap;

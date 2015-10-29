@@ -6,6 +6,14 @@ module.exports = function(grunt)
         // Import package information.
         package: grunt.file.readJSON('package.json'),
 
+        browserify: 
+        {
+            main: {
+                src: 'js/index.js',
+                dest: 'js/build/gunswap.js'
+            }            
+        },
+
         // Test.
         simplemocha:
         {
@@ -22,25 +30,11 @@ module.exports = function(grunt)
             }
         },
 
-        concat:
-        {
-            options: {
-                separator: "\n;"
-            },
-            dist: {
-                files: {
-                    'build/Siteswap.js': ['js/util.js','js/BounceGA.js','js/Bezier.js','js/Siteswap.js'],
-                    'build/gunswap.js': ['js/lib/*.js','build/Siteswap.js','js/SiteswapAnimator.js','js/SiteswapGraph.js','js/index.js']
-                }
-            }
-        },
-
         uglify: 
         {
             dist: {
                 files: {
-                    'build/gunswap.min.js': ['build/gunswap.js'],
-                    'build/Siteswap.min.js': ['build/Siteswap.js']
+                    'js/build/gunswap.min.js': ['js/build/gunswap.js']
                 }
             }
         },
@@ -52,7 +46,7 @@ module.exports = function(grunt)
             default:
             {
                 files: ['**'],
-                tasks: ['simplemocha'],
+                tasks: ['build'],
             }
 
         }
@@ -64,6 +58,7 @@ module.exports = function(grunt)
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-browserify');
 
     // `default` task for the everyday.
     grunt.registerTask('default', ['watch:default']);
@@ -71,6 +66,6 @@ module.exports = function(grunt)
     // `build`, `test` task for Travis CI.
     grunt.registerTask('test', ['simplemocha']);
 
-    grunt.registerTask('build', ['concat','uglify']);
+    grunt.registerTask('build', ['browserify','uglify']);
 
 };

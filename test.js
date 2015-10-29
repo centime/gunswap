@@ -1,5 +1,7 @@
-var Siteswap = require('./build/Siteswap.js');
+var Siteswap = require('./js/Siteswap.js');
 var assert = require("assert");
+
+console.log(Siteswap);
 
 describe('Syntax', function(){
 

@@ -1,5 +1,3 @@
-(function(exports){
-
 // some helper functions 
 if (!Array.prototype.last){
     Array.prototype.last = function(){
@@ -15,7 +13,7 @@ if (!Array.prototype.sum){
 
 function factorial(a) { if (a == 2) { return a; } else if (a == 0) { return 1; } else { return a*factorial(a-1); } } 
 
-exports.siteswapGraph = function(config, outputs) {
+module.exports.siteswapGraph = function(config, outputs) {
 	
 	// apply default configs 
 	config.minPeriod = (config.minPeriod === undefined ? [] : config.minPeriod);
@@ -376,5 +374,3 @@ exports.siteswapGraph = function(config, outputs) {
 	}
 
 }
-
-})(typeof exports === 'undefined'? this['SiteswapGraph'] = {} : exports);

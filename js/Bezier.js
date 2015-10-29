@@ -2,9 +2,7 @@
 // The only thing I can take any credit for is modifying the algorithm to accomodate variable input control points and
 // the "matchVelocity" idea.
 
-(function(exports){
-
-exports.interpolateBezierSpline = function(P,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity) {
+module.exports.interpolateBezierSpline = function(P,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity) {
 		
 	// t goes from 0 to 1
 
@@ -106,5 +104,3 @@ exports.interpolateBezierSpline = function(P,t,v_0,v_T,v_0scale,v_Tscale,matchVe
 	return dwellPosition;
 
 }
-
-})(typeof exports === 'undefined'? this['Bezier'] = {} : exports);
